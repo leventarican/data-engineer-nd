@@ -7,7 +7,8 @@ Demo of how to injest data from JSON files, transform an load it to a relational
 ![ER model](er.png)
 
 ## Project Repository files
-* `create-tables.py`: create the database, drop previous tables and create tables
+* `create_tables.py`: create the database, drop previous tables and create tables
+    * on jupyter: restart kernel before run `create_tables.py`
 * `sql_queries.py`: kind of a DDL
 * `etl.py`: here happens the magic: read json files, process and load (to db).
 
@@ -19,7 +20,6 @@ Demo of how to injest data from JSON files, transform an load it to a relational
 ```
 SELECT * FROM songplays WHERE song_id is not null;
 ```
-
 
 ## Database and analytics goals
 we created a relational database (postgres) in order to provide an easy way to query the data. 
