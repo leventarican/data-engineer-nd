@@ -1,65 +1,4 @@
 
-"""
-fact table
-################################################################################
-songplays - records in log data associated with song plays i.e. records with
-page NextSong
-songplay_id, start_time, user_id, level, song_id, artist_id, session_id,
-location, user_agent
-
-dimension tables
-################################################################################
-users - users in the app
-user_id, first_name, last_name, gender, level
-
-songs - songs in music database
-song_id, title, artist_id, year, duration
-
-artists - artists in music database
-artist_id, name, location, latitude, longitude
-
-time - timestamps of records in songplays broken down into specific units
-start_time, hour, day, week, month, year, weekday
-
-example song data
-################################################################################
-{
-    "num_songs": 1,
-    "artist_id": "ARMJAGH1187FB546F3",
-    "artist_latitude": 35.14968,
-    "artist_longitude": -90.04892,
-    "artist_location": "Memphis, TN",
-    "artist_name": "The Box Tops",
-    "song_id": "SOCIWDW12A8C13D406",
-    "title": "Soul Deep",
-    "duration": 148.03546,
-    "year": 1969
-}
-
-example log data
-################################################################################
-{
-    "artist": null,
-    "auth": "Logged In",
-    "firstName": "Kaylee",
-    "gender": "F",
-    "itemInSession": 2,
-    "lastName": "Summers",
-    "length": null,
-    "level": "free",
-    "location": "Phoenix-Mesa-Scottsdale, AZ",
-    "method": "GET",
-    "page": "Upgrade",
-    "registration": 1540344794796.0,
-    "sessionId": 139,
-    "song": null,
-    "status": 200,
-    "ts": 1541106132796,
-    "userAgent": Gecko
-    "userId": "8"
-}
-"""
-
 # DROP TABLES
 # ##############################################################################
 songplay_table_drop = "DROP TABLE IF EXISTS songplays"
@@ -72,13 +11,14 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 # ##############################################################################
 songplay_table_create = ("""
 CREATE TABLE IF NOT EXISTS songplays (
-    songplay_id int PRIMARY KEY, 
-    start_time varchar, 
-    user_id int, 
+    songplay_id serial PRIMARY KEY, 
+    start_time timestamp NOT NULL, 
+    user_id int NOT NULL, 
     level varchar,
     song_id varchar, 
     artist_id varchar, 
-    session_id int, location varchar,
+    session_id int, 
+    location varchar,
     user_agent varchar
 );
 """)
@@ -86,30 +26,28 @@ CREATE TABLE IF NOT EXISTS songplays (
 user_table_create = ("""
 CREATE TABLE IF NOT EXISTS users (
     user_id int PRIMARY KEY, 
-    first_name varchar, 
-    last_name varchar, 
-    gender varchar, level varchar
+    first_name varchar, last_name varchar, gender varchar, level varchar
 );
 """)
 
 song_table_create = ("""
 CREATE TABLE IF NOT EXISTS songs (
-    song_id varchar PRIMARY KEY, title varchar, artist_id varchar, year int,
-    duration numeric
+    song_id varchar PRIMARY KEY, 
+    title varchar, artist_id varchar, year int, duration numeric
 );
 """)
 
 artist_table_create = ("""
 CREATE TABLE IF NOT EXISTS artists (
-    artist_id varchar PRIMARY KEY, name varchar, location varchar, 
-    latitude numeric, longitude numeric
+    artist_id varchar PRIMARY KEY, 
+    name varchar, location varchar, latitude numeric, longitude numeric
 );
 """)
 
 time_table_create = ("""
 CREATE TABLE IF NOT EXISTS time (
-    start_time varchar PRIMARY KEY, hour int, day int, week int, month int, 
-    year int, weekday int
+    start_time timestamp PRIMARY KEY, 
+    hour int, day int, week int, month int, year int, weekday int
 );
 """)
 
@@ -117,10 +55,9 @@ CREATE TABLE IF NOT EXISTS time (
 # ##############################################################################
 
 songplay_table_insert = ("""
-INSERT INTO songplays (songplay_id, start_time, user_id, level, song_id,
+INSERT INTO songplays (start_time, user_id, level, song_id,
 artist_id, session_id, location, user_agent)
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-ON CONFLICT(songplay_id) DO UPDATE SET song_id = EXCLUDED.song_id
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
 ;
 """)
 

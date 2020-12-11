@@ -4,25 +4,11 @@ import psycopg2
 import pandas as pd
 from sql_queries import *
 
-"""
-song_data/ folder
-
-{
-    "num_songs": 1,
-    "artist_id": "ARD7TVE1187B99BFB1",
-    "artist_latitude": null,
-    "artist_longitude": null,
-    "artist_location": "California - LA",
-    "artist_name": "Casual",
-    "song_id": "SOMZWCG12A8C13C480",
-    "title": "I Didn't Mean To",
-    "duration": 218.93179,
-    "year": 0
-}
-"""
-
-
 def process_song_file(cur, filepath):
+    """
+    for processing the song JSON files.
+    """
+    
     # open song file
     df = pd.read_json(filepath, lines=True)
 
@@ -40,40 +26,18 @@ def process_song_file(cur, filepath):
     cur.execute(artist_table_insert, artist_data)
 
 
-"""
-log_data/ folder
-
-{
-    "artist": "Stephen Lynch",
-    "auth": "Logged In",
-    "firstName": "Jayden",
-    "gender": "M",
-    "itemInSession": 0,
-    "lastName": "Bell",
-    "length": 182.85669,
-    "level": "free",
-    "location": "Dallas-Fort Worth-Arlington, TX",
-    "method": "PUT",
-    "page": "NextSong",
-    "registration": 1540991795796.0,
-    "sessionId": 829,
-    "song": "Jim Henson's Dead",
-    "status": 200,
-    "ts": 1543537327796,
-    "userAgent": Gecko ...
-    "userId": "91"
-}
-"""
-
-
 def process_log_file(cur, filepath):
+    """
+    for processing the log JSON files.
+    """
+    
     # open log file
     df = pd.read_json(filepath, lines=True)
 
     # filter by NextSong action
     df = df[df["page"] == "NextSong"]
 
-    # convert timestamp column to datetime
+    # convert timestamp column; from bigint to datetime
     t = pd.to_datetime(df.ts, unit='ms')
 
     # insert time data records
@@ -119,8 +83,7 @@ def process_log_file(cur, filepath):
 
         # insert songplay record
         songplay_data = (
-            index,
-            row.ts,
+            pd.to_datetime(row.ts, unit='ms'),
             row.userId,
             row.level,
             songid,
@@ -130,8 +93,11 @@ def process_log_file(cur, filepath):
             row.userAgent)
         cur.execute(songplay_table_insert, songplay_data)
 
-
 def process_data(cur, conn, filepath, func):
+    """
+    files processing
+    """
+    
     # get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
@@ -149,7 +115,6 @@ def process_data(cur, conn, filepath, func):
         conn.commit()
         print('{}/{} files processed.'.format(i, num_files))
 
-
 def main():
     conn = psycopg2.connect(
         "host=127.0.0.1 dbname=sparkifydb user=student password=student")
@@ -159,7 +124,6 @@ def main():
     process_data(cur, conn, filepath='data/log_data', func=process_log_file)
 
     conn.close()
-
 
 if __name__ == "__main__":
     main()

@@ -34,6 +34,46 @@ to bring our data (JSON files) to database we do ETL (extract, transform and loa
 * transform: distribute data to specific tables with dataframe, time transformation, ...
 * load: insert into database
 
+## Example: song dataset
+```
+{
+    "num_songs": 1,
+    "artist_id": "ARMJAGH1187FB546F3",
+    "artist_latitude": 35.14968,
+    "artist_longitude": -90.04892,
+    "artist_location": "Memphis, TN",
+    "artist_name": "The Box Tops",
+    "song_id": "SOCIWDW12A8C13D406",
+    "title": "Soul Deep",
+    "duration": 148.03546,
+    "year": 1969
+}
+```
+
+## Example: log dataset
+```
+{
+    "artist": null,
+    "auth": "Logged In",
+    "firstName": "Kaylee",
+    "gender": "F",
+    "itemInSession": 2,
+    "lastName": "Summers",
+    "length": null,
+    "level": "free",
+    "location": "Phoenix-Mesa-Scottsdale, AZ",
+    "method": "GET",
+    "page": "Upgrade",
+    "registration": 1540344794796.0,
+    "sessionId": 139,
+    "song": null,
+    "status": 200,
+    "ts": 1541106132796,
+    "userAgent": Gecko
+    "userId": "8"
+}
+```
+
 ## Out of scope
 __notes__
 * JSON songs meta data resides under `songs_data/`
