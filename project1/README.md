@@ -1,9 +1,8 @@
 # project 1
+https://github.com/leventarican/data-engineer-nd
 
 ## Project Overview
-a basic description of the project. \
-we have two type JSON sources: song data and log data. \
-this project is to bring the JSON sources into a relational database (= etl).
+Demo of how to injest data from JSON files, transform an load it to a relational database. There are two types of JSON: _log_ and _song_ data
 
 ![ER model](er.png)
 
