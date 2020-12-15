@@ -22,7 +22,7 @@ event_data/2018-11-09-events.csv
 ![python cassandra](python-cassandra.png)
 * Cassandra organizes data into partitions
 * Partitions are stored in nodes
-* Cassandra is a column data store
+* Cassandra is a column data store. Like Apache HBase (also column oriented).
 * __data with same partition will be in same node of a cluster__
 
 ### primary key, composite key, partition key, clustering key
