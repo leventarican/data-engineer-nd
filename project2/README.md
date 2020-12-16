@@ -1,6 +1,5 @@
-# project 2
-https://github.com/leventarican/data-engineer-nd
-
+# Project 2
+* https://github.com/leventarican/data-engineer-nd
 * use ETL to extract our CSV dataset in __Apache Cassandra__
 
 ## Project Description
