@@ -1,19 +1,23 @@
 # Project 3
+https://github.com/leventarican/data-engineer-nd
 
 ## Summary
 * load data from S3 to staging tables on Redshift
 * create the analytics tables from these staging tables
 
-Comments are used effectively and each function has a docstring.
+![data flow](data-flow.png)
 
 ## How To Run the Project
+PREREQUIREMENT: you have a AWS Redshift cluster
+1. run `create_tables.py`
+2. run `etl.py`
 
 ## Project Repository files
 * `create_tables.py`: connects to AWS Redshift (postgreSQL), drop tables, create tables
 * `sql_queries.py`: kind of a DDL
     * create staging tables
     * create fact and dimension tables
-* `etl.py`: here happens the magic: read json files, process and load (to db).
+* `etl.py`: connects to AWS Redshift, loads `log_data` and `song_data` to staging tables and transform them into star schema fact & dimension tables
 
 ## Additional Information
 
@@ -39,3 +43,9 @@ Comments are used effectively and each function has a docstring.
 * https://dev.mysql.com/doc/sakila/en/sakila-structure.html
 * https://github.com/devrimgunduz/pagila
 
+## COPY
+* https://www.postgresql.org/docs/current/sql-copy.html
+* https://docs.aws.amazon.com/redshift/latest/dg/r_COPY_command_examples.html#r_COPY_command_examples-copy-from-json
+
+## CREATE TABLE
+* https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_TABLE_examples.html
