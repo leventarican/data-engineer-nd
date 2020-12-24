@@ -1,3 +1,4 @@
 ignore*
 *.zip
 *.cfg
+__pycache__

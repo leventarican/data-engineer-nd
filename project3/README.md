@@ -21,6 +21,46 @@ PREREQUIREMENT: you have a AWS Redshift cluster
 
 ## Additional Information
 
+### Datasets
+* __log_data__ / events JSON example: logs on user activity
+```
+{
+    "artist": "Des'ree",
+    "auth": "Logged In",
+    "firstName": "Kaylee",
+    "gender": "F",
+    "itemInSession": 1,
+    "lastName": "Summers",
+    "length": 246.30812,
+    "level": "free",
+    "location": "Phoenix-Mesa-Scottsdale, AZ",
+    "method": "PUT",
+    "page": "NextSong",
+    "registration": 1540344794796.0,
+    "sessionId": 139,
+    "song": "You Gotta Be",
+    "status": 200,
+    "ts": 1541106106796,
+    "userAgent": "\"Mozilla\/5.0 (Windows NT 6.1; WOW64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/35.0.1916.153 Safari\/537.36\"",
+    "userId": "8"
+}
+```
+* __song_data__ JSON example: metadata on songs
+```
+{
+    "num_songs": 1,
+    "artist_id": "ARJIE2Y1187B994AB7",
+    "artist_latitude": null,
+    "artist_longitude": null,
+    "artist_location": "",
+    "artist_name": "Line Renaud",
+    "song_id": "SOUPIRU12A6D4FA1E1",
+    "title": "Der Kleine Dompfaff",
+    "duration": 152.92036,
+    "year": 0
+}
+```
+
 ### AWS
 
 #### AWS SDK
@@ -43,9 +83,15 @@ PREREQUIREMENT: you have a AWS Redshift cluster
 * https://dev.mysql.com/doc/sakila/en/sakila-structure.html
 * https://github.com/devrimgunduz/pagila
 
-## COPY
+#### COPY
 * https://www.postgresql.org/docs/current/sql-copy.html
 * https://docs.aws.amazon.com/redshift/latest/dg/r_COPY_command_examples.html#r_COPY_command_examples-copy-from-json
 
-## CREATE TABLE
+#### CREATE TABLE
 * https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_TABLE_examples.html
+
+#### ETL with Hive, Spark
+* https://knowledge.udacity.com/questions/420591
+* https://www.softkraft.co/python-with-hive
+* https://www.cdata.com/kb/tech/hive-python-petl.rst
+* https://dzone.com/articles/example-of-etl-application-using-apache-spark-and

@@ -180,5 +180,5 @@ if __name__ == "__main__":
     # ########################
     # deleteCluster()
     # run until cluster status becomes Deleted
-    # prettyRedshiftProps()
+    prettyRedshiftProps()
     # deleteRole()
