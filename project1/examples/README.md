@@ -10,5 +10,4 @@
     * transform data
     * insert data to tables
 
-![postgresql database](postgresql-database.png)
 ![schema](schema.png)

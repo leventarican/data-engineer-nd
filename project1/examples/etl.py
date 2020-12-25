@@ -122,8 +122,8 @@ def main():
 
     print("read to process JSON files...")
 
-    process_data(cur, conn, filepath='data/song_data', func=process_song_file)
-    process_data(cur, conn, filepath='data/log_data', func=process_log_file)
+    process_data(cur, conn, filepath='../../dataset/small/song_data', func=process_song_file)
+    process_data(cur, conn, filepath='../../dataset/small/log_data', func=process_log_file)
 
     conn.close()
 
