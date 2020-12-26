@@ -15,8 +15,10 @@ PREREQUIREMENT: you have a AWS Redshift cluster
 ## Project Repository files
 * `create_tables.py`: connects to AWS Redshift (postgreSQL), drop tables, create tables
 * `sql_queries.py`: kind of a DDL
-    * create staging tables
-    * create fact and dimension tables
+    * CREATE staging tables
+    * CREATE fact and dimension tables
+    * COPY: read json data from s3 (Redshift COPY is very _powerful_)
+    * INSERT: transform from staging table to dact/dimension table
 * `etl.py`: connects to AWS Redshift, loads `log_data` and `song_data` to staging tables and transform them into star schema fact & dimension tables
 
 ## Additional Information
@@ -83,12 +85,19 @@ PREREQUIREMENT: you have a AWS Redshift cluster
 * https://dev.mysql.com/doc/sakila/en/sakila-structure.html
 * https://github.com/devrimgunduz/pagila
 
+#### PosgreSQL vs Reshift
+* https://docs.aws.amazon.com/redshift/latest/dg/c_redshift-and-postgres-sql.html
+
 #### COPY
 * https://www.postgresql.org/docs/current/sql-copy.html
 * https://docs.aws.amazon.com/redshift/latest/dg/r_COPY_command_examples.html#r_COPY_command_examples-copy-from-json
+* https://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-conversion.html
 
 #### CREATE TABLE
 * https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_TABLE_examples.html
+
+#### Redshift datatypes
+* https://docs.aws.amazon.com/redshift/latest/dg/c_Supported_data_types.html
 
 #### ETL with Hive, Spark
 * https://knowledge.udacity.com/questions/420591

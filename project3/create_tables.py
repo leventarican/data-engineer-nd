@@ -16,6 +16,7 @@ def create_tables(cur, conn):
     create tables in staging and final 
     """
     for query in create_table_queries:
+        print(query)
         cur.execute(query)
         conn.commit()
 
