@@ -6,6 +6,7 @@ se_id|artist                 |auth     |firstname|gender|iteminsession|lastname|
    15|Nirvana                |Logged In|Aleena   |F     |            0|Kirby   |214.77832|paid |Waterloo-Cedar Falls, IA                   |PUT   |NextSong|1541022995796|      237|Serve The Servants                  |   200|2018-11-05 01:27:22|Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:31.0) Gecko/20100101 Firefox/31.0                                         |44    |
    23|Television             |Logged In|Aleena   |F     |            1|Kirby   |238.49751|paid |Waterloo-Cedar Falls, IA                   |PUT   |NextSong|1541022995796|      237|See No Evil  (Remastered LP Version)|   200|2018-11-05 01:30:56|Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:31.0) Gecko/20100101 Firefox/31.0                                         |44    |
  */
+
 select * from public.staging_songs ss limit 3;
 /*
 ss_id|num_songs|artist_id         |artist_latitude|artist_longitude|artist_location|artist_name   |song_id           |title                     |duration |year|
@@ -15,22 +16,12 @@ ss_id|num_songs|artist_id         |artist_latitude|artist_longitude|artist_locat
   142|        1|ARKUAXS11F4C841DEB|        38.8991|         -77.029|Washington DC  |Jazz Addixx   |SOLJVMI12AB018ABF0|Say Jazzy                 |266.52689|2007|
  */
 
-select se.se_id, se.ts, se.song from public.staging_events se limit 3;
+-- https://docs.aws.amazon.com/redshift/latest/dg/c_Examples_of_INSERT_30.html
 
 -- user_id, first_name, last_name, gender, level
-select * from (
-select DISTINCT 
-se.userid, 
-se.firstname first_name, 
-se.lastname last_name, 
-se.gender, 
-se."level" 
-from public.staging_events se 
-limit 10);
-
--- https://docs.aws.amazon.com/redshift/latest/dg/c_Examples_of_INSERT_30.html
-insert into users (first_name, last_name, gender, "level") (
+insert into users (
 	select distinct 
+	se.userid user_id, 
 	se.firstname first_name, 
 	se.lastname last_name, 
 	se.gender, 
@@ -38,18 +29,20 @@ insert into users (first_name, last_name, gender, "level") (
 	from public.staging_events se
 );
 
+truncate users;
 select count(*) from users u ;
 select * from users u limit 3;
 /*
 user_id|first_name|last_name|gender|level|
 -------|----------|---------|------|-----|
-     50|Katherine |Gay      |F     |free |
-    114|Sylvie    |Cruz     |F     |free |
-    178|Jacob     |Klein    |M     |paid |
+     43|Jahiem    |Miles    |M     |free |
+     95|Sara      |Johnson  |F     |paid |
+     75|Joseph    |Gutierrez|M     |free |
  */
 
-insert into songs (title, artist_id, "year", duration) (
+insert into songs (
 	select distinct 
+	ss.song_id, 
 	ss.title, 
 	ss.artist_id, 
 	ss."year", 
@@ -57,21 +50,24 @@ insert into songs (title, artist_id, "year", duration) (
 	from public.staging_songs ss
 );
 
+-- song_id, title, artist_id, year, duration
 select * from songs s limit 3;
 /*
-song_id|title                                                          |artist_id         |year|duration |
--------|---------------------------------------------------------------|------------------|----|---------|
-     20|Water Into Ice                                                 |ARCGXRE11E2835E1DF|2008| 245.2371|
-     84|Don?t Trust Chief Wiggum                                       |AR1JRJ61187B9B3F37|   0|437.60281|
-    148|The Lower The Sun                                              |ARCDWKV1187B98C4CD|2005|216.13669|
+song_id           |title           |artist_id         |year|duration |
+------------------|----------------|------------------|----|---------|
+SOGMXBW12A6D4FB8D7|They Say (Album)|ARV1P811187FB3CFC6|2007| 193.4624|
+SOSVCWK12AB017FF36|Co-coward       |AR9TCXZ1187FB4D9E8|1999|228.62322|
+SOBJLCQ12A8AE4704D|The Undefeated  |AREDHLU1187B9ACB8C|2003|247.40526|
  */
 
-insert into artists ("name", location, latitude, longitude) (
+-- artist_id, name, location, lattitude, longitude
+insert into artists (
 	select distinct 
-	ss.artist_name, 
-	ss.artist_location , 
-	ss.artist_latitude , 
-	ss.artist_longitude 
+	ss.artist_id, 
+	ss.artist_name as "name", 
+	ss.artist_location as location, 
+	ss.artist_latitude as latitude, 
+	ss.artist_longitude as longitude
 	from public.staging_songs ss
 );
 
@@ -84,6 +80,7 @@ artist_id|name       |location      |latitude|longitude|
       144|Lamb Of God| Richmond, VA | 37.5407|-77.43365|
  */
 
+-- start_time, hour, day, week, month, year, weekday
 insert into "time" (
 	select 
 	se.ts start_time, 
@@ -105,12 +102,24 @@ start_time         |hour|day|week|month|year|weekday|
 2018-11-05 02:30:17|   2|  5|  45|   11|2018|      1|
 */
 
+-- songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent
 insert into songplays (start_time, user_id, "level", song_id, artist_id, session_id, location, user_agent) (
-	select se.ts start_time, se.userid, se."level", ss.song_id, ss.artist_id, se.sessionid, ss.artist_location, se.useragent 
+	select 
+	se.ts start_time, 
+	se.userid user_id, 
+	se."level", 
+	ss.song_id, 
+	ss.artist_id, 
+	se.sessionid session_id, 
+	ss.artist_location, 
+	se.useragent 
 	from staging_events se, staging_songs ss
 	where se.page = 'NextSong'
 	and se.song = ss.title 
 	and se.artist = ss.artist_name
 	and se."length" = ss.duration 
 );
+
+select count(*) from songplays;
+select * from songplays s limit 3;
 

@@ -20,16 +20,6 @@ def create_tables(cur, conn):
         cur.execute(query)
         conn.commit()
 
-def check_connection(cur, conn):
-    try: 
-        cur.execute("SELECT * FROM debug;")
-    except psycopg2.Error as e: 
-        print("Error: select *")
-        print (e)
-
-    row = cur.fetchone()
-    print(row)
-        
 def main():
     config = configparser.ConfigParser()
     config.read('dwh.cfg')
@@ -38,8 +28,6 @@ def main():
     conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))
     cur = conn.cursor()
     
-    #check_connection(cur, conn)
-
     drop_tables(cur, conn)
     create_tables(cur, conn)
 

@@ -42,7 +42,7 @@ create table if not exists staging_events(
     status INT,
     ts TIMESTAMP,
     userAgent varchar,
-    userId varchar
+    userId INT
 );
 """)
 
@@ -66,12 +66,12 @@ create table if not exists staging_songs(
 # IDENTITY(seed, step) --> IDENTITY(0,1) 
 songplay_table_create = ("""
 CREATE TABLE IF NOT EXISTS songplays (
-    songplay_id int identity(0,1), 
+    songplay_id int IDENTITY(0,1), 
     start_time timestamp, 
     user_id int, 
     level varchar,
-    song_id int, 
-    artist_id int, 
+    song_id varchar, 
+    artist_id varchar, 
     session_id int, 
     location varchar,
     user_agent varchar
@@ -80,21 +80,21 @@ CREATE TABLE IF NOT EXISTS songplays (
 
 user_table_create = ("""
 CREATE TABLE IF NOT EXISTS users (
-    user_id int identity(0,1),  
+    user_id int,  
     first_name varchar, last_name varchar, gender varchar, level varchar
 );
 """)
 
 song_table_create = ("""
 CREATE TABLE IF NOT EXISTS songs (
-    song_id int identity(0,1), 
+    song_id varchar, 
     title varchar, artist_id varchar, year int, duration FLOAT
 );
 """)
 
 artist_table_create = ("""
 CREATE TABLE IF NOT EXISTS artists (
-    artist_id int identity(0,1), 
+    artist_id varchar, 
     name varchar, location varchar, latitude FLOAT, longitude FLOAT
 );
 """)
@@ -129,11 +129,28 @@ json 'auto'
 # FINAL TABLES
 
 songplay_table_insert = ("""
+insert into songplays (start_time, user_id, "level", song_id, artist_id, session_id, location, user_agent) (
+	select 
+	se.ts start_time, 
+	se.userid user_id, 
+	se."level", 
+	ss.song_id, 
+	ss.artist_id, 
+	se.sessionid session_id, 
+	ss.artist_location, 
+	se.useragent 
+	from staging_events se, staging_songs ss 
+	where se.page = 'NextSong' 
+	and se.song = ss.title 
+	and se.artist = ss.artist_name 
+	and se."length" = ss.duration 
+);
 """)
 
 user_table_insert = ("""
-insert into users (first_name, last_name, gender, "level") (
+insert into users (
 	select distinct 
+	se.userid user_id, 
 	se.firstname first_name, 
 	se.lastname last_name, 
 	se.gender, 
@@ -143,8 +160,9 @@ insert into users (first_name, last_name, gender, "level") (
 """)
 
 song_table_insert = ("""
-insert into songs (title, artist_id, "year", duration) (
+insert into songs (
 	select distinct 
+	ss.song_id, 
 	ss.title, 
 	ss.artist_id, 
 	ss."year", 
@@ -154,12 +172,13 @@ insert into songs (title, artist_id, "year", duration) (
 """)
 
 artist_table_insert = ("""
-insert into artists ("name", location, latitude, longitude) (
+insert into artists (
 	select distinct 
-	ss.artist_name, 
-	ss.artist_location, 
-	ss.artist_latitude, 
-	ss.artist_longitude 
+	ss.artist_id, 
+	ss.artist_name as "name", 
+	ss.artist_location as location, 
+	ss.artist_latitude as latitude, 
+	ss.artist_longitude as longitude
 	from public.staging_songs ss
 );
 """)
