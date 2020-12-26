@@ -10,6 +10,7 @@ Demo of how to injest data from JSON files, transform an load it to a relational
 * `create_tables.py`: create the database, drop previous tables and create tables
     * on jupyter: restart kernel before run `create_tables.py`
 * `sql_queries.py`: kind of a DDL
+    * you can also use foreign keys in `songplays` table. e.g. `REFERENCES time(start_time)`,
 * `etl.py`: here happens the magic: read json files, process and load (to db).
 
 ## How To Run the Project
