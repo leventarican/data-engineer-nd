@@ -9,6 +9,8 @@ https://github.com/leventarican/data-engineer-nd
 
 ## How To Run the Project
 PREREQUIREMENT: you have a AWS Redshift cluster
+
+0. ensure to provide AWS credentials, with environment variables, config files, ...
 1. run `create_tables.py`
 2. run `etl.py`
 
