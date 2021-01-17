@@ -15,7 +15,12 @@ PREREQUIREMENT: running spark cluster
 ## Project Repository files
 * `etl.py`: extracts data from S3, transform data to analytics tables, write partitioned parquet files in table directories on S3.
 
+
+
 ## Additional Information
+
+### Database Schema
+![database schema](database-schema.png)
 
 ### Create EMR from AWS management console
 1. create SSH key-pair
