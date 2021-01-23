@@ -11,12 +11,20 @@ class LoadFactOperator(BaseOperator):
                  # Define your operators params (with defaults) here
                  # Example:
                  # conn_id = your-connection-name
+                 conn_id="",
+                 table="",
+                 sql_stmt="",
                  *args, **kwargs):
 
         super(LoadFactOperator, self).__init__(*args, **kwargs)
         # Map params here
         # Example:
         # self.conn_id = conn_id
+        self.conn_id = conn_id
+        self.table = table
+        self.sql_stmt = sql_stmt
 
     def execute(self, context):
-        self.log.info('LoadFactOperator not implemented yet')
+        self.log.info('LoadFactOperator IS implemented')
+        redshift_hook = PostgresHook(postgres_conn_id=self.conn_id)
+        redshift_hook.run(f"INSERT INTO {self.table} {self.sql_stmt}")
