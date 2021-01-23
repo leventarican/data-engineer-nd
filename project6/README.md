@@ -15,6 +15,9 @@ https://github.com/leventarican/data-engineer-nd
     * `redshift` with `Postgres` connection type
 * you can reuse code from project 2
 
+## Pipeline
+![](pipeline.png)
+
 ## Additional Information
 
 ### Apache Airflow

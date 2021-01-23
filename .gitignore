@@ -2,3 +2,6 @@ ignore*
 *.zip
 *.cfg
 __pycache__
+
+# pipenv files
+Pipfile*
