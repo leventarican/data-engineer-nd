@@ -3,7 +3,11 @@
 ### Data Engineering Capstone Project
 
 #### Project Summary
---describe your project at a high level--
+~~--describe your project at a high level--~~
+
+We have a data source with __news headlines__ from 2003 to 2020. Our interest is to find headlines from car manufacturers and show the models in the headline year. For that purpose we have a second data source with a list of __car__ brands from 1984 to 2020.
+Our use case is for a given car manufacturer and year to show the headlines and the car model in that year.
+As an example we took ferrari and the headlines in 2012.
 
 The project follows the follow steps:
 * Step 1: Scope the Project and Gather Data
@@ -21,10 +25,36 @@ import pandas as pd
 ### Step 1: Scope the Project and Gather Data
 
 #### Scope 
-Explain what you plan to do in the project in more detail. What data do you use? What is your end solution look like? What tools did you use? etc>
+~~Explain what you plan to do in the project in more detail. What data do you use? What is your end solution look like? What tools did you use?~~
+
+We have two different data source:
+* `abcnews-date-text.csv` with over 1 million headlines. 
+* `all-vehicles-model.json` with over 40k datasets from car brands / models
+These two data sources resides within the workspace in the `data/` folder.
+
+For the processing we are using Apache Spark. We load the data and save it as parquet files partitioned by year. The parquet files resides in the `data/` folder:
+* `news/` parquet files for news headlines dataset
+* `vehicles/` parquet files for vehicles dataset
+Afterwards we load the parquet file, transform it in order to have to the structure we can query. 
 
 #### Describe and Gather Data 
-Describe the data sets you're using. Where did it come from? What type of information is included? 
+~~Describe the data sets you're using. Where did it come from? What type of information is included?~~
+
+##### Dataset 1: vehicles
+* Source of the dataset is: https://public.opendatasoft.com/explore/dataset/all-vehicles-model/information/
+
+###### Example Entry
+| Make   | Model   | Year | Drive                      | Cylinders | Engine displacement | ... |
+|--------|---------|------|----------------------------|-----------|---------------------|-----|
+| Toyota | Corolla | 1989 | 4-Wheel or All-Wheel Drive | 4         | 1.6                 | ... |
+
+##### Dataset 2: news headlines
+* Source of the dataset is: https://www.kaggle.com/therohk/million-headlines?select=abcnews-date-text.csv
+
+###### Example Entry
+| publish_date | headline_text                                      |
+|--------------|----------------------------------------------------|
+| 20030219     | aba decides against community broadcasting licence |
 
 #### Dataset 1/2: vehicles
 
@@ -432,90 +462,57 @@ news.show(10)
 
 
 ```python
-vehicle_news = spark.sql("""
-select v.brand, n.headline_text news, n.year from vehicles v
-join news n 
-on v.year = n.year
-where lower(v.brand) in ("toyota", "bmw", "ferrari")
-and headline_text like '%' || lower(v.brand) || '%'
-""")
-# where upper(n.headline_text) like upper(v.brand)
-vehicle_news.show(10)
-```
-
-    +-------+--------------------+----+
-    |  brand|                news|year|
-    +-------+--------------------+----+
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    |Ferrari|vettel hopes ferr...|2015|
-    +-------+--------------------+----+
-    only showing top 10 rows
-    
-
-
-
-```python
-vehicles.join(news, on="year", how='left').show(10)
-```
-
-    +----+-------+-----+---------+------------+--------------------+
-    |year|  brand|model|cylinders|publish_date|       headline_text|
-    +----+-------+-----+---------+------------+--------------------+
-    |2007|Pontiac|   G6|        4|    20070101|140 arrested in a...|
-    |2007|Pontiac|   G6|        4|    20070101|1976 govt papers ...|
-    |2007|Pontiac|   G6|        4|    20070101|2006 deadliest ye...|
-    |2007|Pontiac|   G6|        4|    20070101|2006 was hobarts ...|
-    |2007|Pontiac|   G6|        4|    20070101|500 involved in r...|
-    |2007|Pontiac|   G6|        4|    20070101|act govt expects ...|
-    |2007|Pontiac|   G6|        4|    20070101|act govt starts u...|
-    |2007|Pontiac|   G6|        4|    20070101|adelaide dog shel...|
-    |2007|Pontiac|   G6|        4|    20070101|aussie trio to bo...|
-    |2007|Pontiac|   G6|        4|    20070101|australian crowds...|
-    +----+-------+-----+---------+------------+--------------------+
-    only showing top 10 rows
-    
-
-
-
-```python
 from pyspark.sql.functions import lower, col
 
-vehicles.join(news, on="year", how='left').filter(news.headline_text.contains(lower(vehicles.brand))).distinct().show(10)
+vehicle_news = vehicles.join(news, on="year", how='left').filter(news.headline_text.contains(lower(vehicles.brand))).distinct()
 ```
 
-    +----+-----+--------------------+---------+------------+--------------------+
-    |year|brand|               model|cylinders|publish_date|       headline_text|
-    +----+-----+--------------------+---------+------------+--------------------+
-    |2004| Audi|          A4 quattro|        6|    20040103|us audit firm dis...|
-    |2004| Audi|        A4 Cabriolet|        4|    20040103|us audit firm dis...|
-    |2004| Audi|          A4 quattro|        6|    20040105|police defuse bom...|
-    |2004| Ford|     F150 Pickup 2WD|        8|    20040108|actor harrison fo...|
-    |2004| Ford|   Ranger Pickup 2WD|        6|    20040110|woodfordes sympat...|
-    |2004| Audi|                  A4|        6|    20040112|schools out at la...|
-    |2004| Ford|     F150 Pickup 4WD|        6|    20040117|rumford one back ...|
-    |2004| Audi|A4 Cabriolet quattro|        6|    20040122|council audit hig...|
-    |2004| Ford|         Thunderbird|        8|    20040122|saha gets coveted...|
-    |2004| Ford|   Ranger Pickup 2WD|        4|    20040128|bradford await ca...|
-    +----+-----+--------------------+---------+------------+--------------------+
+
+```python
+vehicle_news.count()
+```
+
+
+
+
+    412803
+
+
+
+
+```python
+from pyspark.sql.functions import asc
+
+ferrari_2006 = vehicle_news\
+.filter(col("year").like("%2012%"))\
+.filter(col("brand").like("%Ferrari%"))\
+.orderBy(asc("publish_date"))
+
+ferrari_2006.show(10)
+```
+
+    +----+-------+-----------------+---------+------------+--------------------+
+    |year|  brand|            model|cylinders|publish_date|       headline_text|
+    +----+-------+-----------------+---------+------------+--------------------+
+    |2012|Ferrari|458 Italia Spider|        8|    20120118|out of control fe...|
+    |2012|Ferrari| 458 Italia Coupe|        8|    20120118|out of control fe...|
+    |2012|Ferrari|       California|        8|    20120118|out of control fe...|
+    |2012|Ferrari|               FF|       12|    20120118|out of control fe...|
+    |2012|Ferrari|458 Italia Spider|        8|    20120120|charges laid over...|
+    |2012|Ferrari| 458 Italia Coupe|        8|    20120120|charges laid over...|
+    |2012|Ferrari|               FF|       12|    20120120|charges laid over...|
+    |2012|Ferrari|       California|        8|    20120120|charges laid over...|
+    |2012|Ferrari|       California|        8|    20120305|ferrari wont plac...|
+    |2012|Ferrari|               FF|       12|    20120305|ferrari wont plac...|
+    +----+-------+-----------------+---------+------------+--------------------+
     only showing top 10 rows
     
 
 
 
 ```python
-print("ok")
+ferrari_2006.write.mode("overwrite").parquet(os.path.join("data", "ferrari"))
 ```
-
-    ok
-
 
 #### 4.2 Data Quality Checks
 Explain the data quality checks you'll perform to ensure the pipeline ran as expected. These could include:
