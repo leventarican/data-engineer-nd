@@ -412,75 +412,110 @@ order by int(year) asc
 news.show(10)
 ```
 
+    +------------+--------------------+----+
+    |publish_date|       headline_text|year|
+    +------------+--------------------+----+
+    |    20040101|9 dead as bomb en...|2004|
+    |    20040101|brawls mar lake m...|2004|
+    |    20040101|abandoned pets cr...|2004|
+    |    20040101|act water charges...|2004|
+    |    20040101|aftershocks strik...|2004|
+    |    20040101|athens olympics c...|2004|
+    |    20040101|authorities conti...|2004|
+    |    20040101|ba flight detaine...|2004|
+    |    20040101|beagle remains si...|2004|
+    |    20040101|black caps hope t...|2004|
+    +------------+--------------------+----+
+    only showing top 10 rows
+    
+
+
 
 ```python
 vehicle_news = spark.sql("""
-select v.*, n.* from vehicles v
+select v.brand, n.headline_text news, n.year from vehicles v
 join news n 
 on v.year = n.year
+where lower(v.brand) in ("toyota", "bmw", "ferrari")
+and headline_text like '%' || lower(v.brand) || '%'
 """)
 # where upper(n.headline_text) like upper(v.brand)
 vehicle_news.show(10)
 ```
 
-
-    ---------------------------------------------------------------------------
-
-    KeyboardInterrupt                         Traceback (most recent call last)
-
-    <ipython-input-82-628420fcb627> in <module>()
-          6 """)
-          7 # where upper(n.headline_text) like upper(v.brand)
-    ----> 8 vehicle_news.show(10)
+    +-------+--------------------+----+
+    |  brand|                news|year|
+    +-------+--------------------+----+
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    |Ferrari|vettel hopes ferr...|2015|
+    +-------+--------------------+----+
+    only showing top 10 rows
     
-
-    /opt/spark-2.4.3-bin-hadoop2.7/python/pyspark/sql/dataframe.py in show(self, n, truncate, vertical)
-        376         """
-        377         if isinstance(truncate, bool) and truncate:
-    --> 378             print(self._jdf.showString(n, 20, vertical))
-        379         else:
-        380             print(self._jdf.showString(n, int(truncate), vertical))
-
-
-    /opt/spark-2.4.3-bin-hadoop2.7/python/lib/py4j-0.10.7-src.zip/py4j/java_gateway.py in __call__(self, *args)
-       1253             proto.END_COMMAND_PART
-       1254 
-    -> 1255         answer = self.gateway_client.send_command(command)
-       1256         return_value = get_return_value(
-       1257             answer, self.gateway_client, self.target_id, self.name)
-
-
-    /opt/spark-2.4.3-bin-hadoop2.7/python/lib/py4j-0.10.7-src.zip/py4j/java_gateway.py in send_command(self, command, retry, binary)
-        983         connection = self._get_connection()
-        984         try:
-    --> 985             response = connection.send_command(command)
-        986             if binary:
-        987                 return response, self._create_connection_guard(connection)
-
-
-    /opt/spark-2.4.3-bin-hadoop2.7/python/lib/py4j-0.10.7-src.zip/py4j/java_gateway.py in send_command(self, command)
-       1150 
-       1151         try:
-    -> 1152             answer = smart_decode(self.stream.readline()[:-1])
-       1153             logger.debug("Answer received: {0}".format(answer))
-       1154             if answer.startswith(proto.RETURN_MESSAGE):
-
-
-    /opt/conda/lib/python3.6/socket.py in readinto(self, b)
-        584         while True:
-        585             try:
-    --> 586                 return self._sock.recv_into(b)
-        587             except timeout:
-        588                 self._timeout_occurred = True
-
-
-    KeyboardInterrupt: 
 
 
 
 ```python
-
+vehicles.join(news, on="year", how='left').show(10)
 ```
+
+    +----+-------+-----+---------+------------+--------------------+
+    |year|  brand|model|cylinders|publish_date|       headline_text|
+    +----+-------+-----+---------+------------+--------------------+
+    |2007|Pontiac|   G6|        4|    20070101|140 arrested in a...|
+    |2007|Pontiac|   G6|        4|    20070101|1976 govt papers ...|
+    |2007|Pontiac|   G6|        4|    20070101|2006 deadliest ye...|
+    |2007|Pontiac|   G6|        4|    20070101|2006 was hobarts ...|
+    |2007|Pontiac|   G6|        4|    20070101|500 involved in r...|
+    |2007|Pontiac|   G6|        4|    20070101|act govt expects ...|
+    |2007|Pontiac|   G6|        4|    20070101|act govt starts u...|
+    |2007|Pontiac|   G6|        4|    20070101|adelaide dog shel...|
+    |2007|Pontiac|   G6|        4|    20070101|aussie trio to bo...|
+    |2007|Pontiac|   G6|        4|    20070101|australian crowds...|
+    +----+-------+-----+---------+------------+--------------------+
+    only showing top 10 rows
+    
+
+
+
+```python
+from pyspark.sql.functions import lower, col
+
+vehicles.join(news, on="year", how='left').filter(news.headline_text.contains(lower(vehicles.brand))).distinct().show(10)
+```
+
+    +----+-----+--------------------+---------+------------+--------------------+
+    |year|brand|               model|cylinders|publish_date|       headline_text|
+    +----+-----+--------------------+---------+------------+--------------------+
+    |2004| Audi|          A4 quattro|        6|    20040103|us audit firm dis...|
+    |2004| Audi|        A4 Cabriolet|        4|    20040103|us audit firm dis...|
+    |2004| Audi|          A4 quattro|        6|    20040105|police defuse bom...|
+    |2004| Ford|     F150 Pickup 2WD|        8|    20040108|actor harrison fo...|
+    |2004| Ford|   Ranger Pickup 2WD|        6|    20040110|woodfordes sympat...|
+    |2004| Audi|                  A4|        6|    20040112|schools out at la...|
+    |2004| Ford|     F150 Pickup 4WD|        6|    20040117|rumford one back ...|
+    |2004| Audi|A4 Cabriolet quattro|        6|    20040122|council audit hig...|
+    |2004| Ford|         Thunderbird|        8|    20040122|saha gets coveted...|
+    |2004| Ford|   Ranger Pickup 2WD|        4|    20040128|bradford await ca...|
+    +----+-----+--------------------+---------+------------+--------------------+
+    only showing top 10 rows
+    
+
+
+
+```python
+print("ok")
+```
+
+    ok
+
 
 #### 4.2 Data Quality Checks
 Explain the data quality checks you'll perform to ensure the pipeline ran as expected. These could include:
