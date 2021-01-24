@@ -1,6 +1,6 @@
 
-# Project Title
-### Data Engineering Capstone Project
+# Data Engineering Capstone Project
+* github repository: https://github.com/leventarican/data-engineer-nd/tree/main/project8
 
 #### Project Summary
 ~~--describe your project at a high level--~~
@@ -18,27 +18,31 @@ The project follows the follow steps:
 
 
 ```python
-# Do all imports and installs here
-import pandas as pd
+import os
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StringType
+from pyspark.sql.functions import udf
+from pyspark.sql.functions import lower, col
+from pyspark.sql.functions import asc
 ```
 
 ### Step 1: Scope the Project and Gather Data
 
 #### Scope 
-~~Explain what you plan to do in the project in more detail. What data do you use? What is your end solution look like? What tools did you use?~~
+~~Explain what you plan to do in the project in more detail. What data do you use? What is your end solution look like? What tools did you use? etc>~~
 
 We have two different data source:
 * `abcnews-date-text.csv` with over 1 million headlines. 
 * `all-vehicles-model.json` with over 40k datasets from car brands / models
 These two data sources resides within the workspace in the `data/` folder.
 
-For the processing we are using Apache Spark. We load the data and save it as parquet files partitioned by year. The parquet files resides in the `data/` folder:
+For the processing we are using Apache Spark. We load (incl. schema inferering) the data and save it as parquet files partitioned by year. The parquet files resides in the `data/` folder:
 * `news/` parquet files for news headlines dataset
 * `vehicles/` parquet files for vehicles dataset
 Afterwards we load the parquet file, transform it in order to have to the structure we can query. 
 
 #### Describe and Gather Data 
-~~Describe the data sets you're using. Where did it come from? What type of information is included?~~
+~~Describe the data sets you're using. Where did it come from? What type of information is included? ~~
 
 ##### Dataset 1: vehicles
 * Source of the dataset is: https://public.opendatasoft.com/explore/dataset/all-vehicles-model/information/
@@ -60,7 +64,6 @@ Afterwards we load the parquet file, transform it in order to have to the struct
 
 
 ```python
-from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("Data Engineer - Capstone").getOrCreate()
 ```
 
@@ -167,18 +170,6 @@ df.printSchema()
 
 
 ```python
-df.count()
-```
-
-
-
-
-    41443
-
-
-
-
-```python
 df1 = df.select(df["fields"]["make"], df["fields"]["model"], df["fields"]["cylinders"], df["fields"]["year"])
 vehicles_table = df1.toDF("brand", "model", "cylinders", "year")
 vehicles_table.show(10)
@@ -215,39 +206,12 @@ vehicles_table.printSchema()
     
 
 
-
-```python
-import os
-vehicles_table.write.partitionBy("year").mode("overwrite").parquet(os.path.join("data", "vehicles"))
-```
-
 #### Dataset 2/2: news
 
 
 ```python
-# pandas
-#news = "data/abcnews-date-text.csv
-#df = pd.read_csv(news, sep=";", error_bad_lines=False, index_col=False, dtype='unicode')
-#df.head()
-```
-
-
-```python
-#df = spark.read.csv("data/abcnews-date-text.csv", header=True, inferSchema=True, mode="DROPMALFORMED", sep=",")
 df = spark.read.csv("data/abcnews-date-text.csv", header=True, mode="DROPMALFORMED", sep=",")
 ```
-
-
-```python
-df.count()
-```
-
-
-
-
-    1082168
-
-
 
 
 ```python
@@ -262,9 +226,6 @@ df.printSchema()
 
 
 ```python
-from pyspark.sql.types import StringType
-from pyspark.sql.functions import udf
-
 get_year = udf(lambda d: d[0:4], StringType())
 news_table = df.withColumn("year", get_year(df["publish_date"]))
 news_table.show(10)
@@ -299,11 +260,6 @@ news_table.printSchema()
      |-- year: string (nullable = true)
     
 
-
-
-```python
-news_table.write.partitionBy("year").mode("overwrite").parquet(os.path.join("data", "news"))
-```
 
 ### Step 2: Explore and Assess the Data
 #### Explore the Data 
@@ -364,19 +320,26 @@ news_table.count()
 
 
 ```python
-# Performing cleaning tasks here
-
-
-
-
+vehicles_table.write.partitionBy("year").mode("overwrite").parquet(os.path.join("data", "vehicles"))
+news_table.write.partitionBy("year").mode("overwrite").parquet(os.path.join("data", "news"))
 ```
 
 ### Step 3: Define the Data Model
 #### 3.1 Conceptual Data Model
-Map out the conceptual data model and explain why you chose that model
+~~Map out the conceptual data model and explain why you chose that model~~
+
+We create a fact table `vehicles_news` which contains the information for detailed car (model, cylinder, year, ...) with a relation to news in same year.
 
 #### 3.2 Mapping Out Data Pipelines
-List the steps necessary to pipeline the data into the chosen data model
+~~List the steps necessary to pipeline the data into the chosen data model~~
+
+For the fact table `vehicles_news` we perform the following steps:
+1. load the staging tables (parquet files)
+2. for each create temporary views
+3. create a dataframe from `vehicles` and `news` with a join on `year`
+4. create the desired dataframe for ferrari and write as parquet file
+
+![](pipeline.png)
 
 ### Step 4: Run Pipelines to Model the Data 
 #### 4.1 Create the data model
@@ -395,9 +358,11 @@ df.count()
 
 
 
-    41443
+    22836
 
 
+
+Check data
 
 
 ```python
@@ -406,24 +371,15 @@ vehicles = spark.sql("""
 select * from vehicles where int(year) > 2003
 order by int(year) asc
 """)
-vehicles.show(10)
+vehicles.show(1)
 ```
 
-    +-------------+--------------------+---------+----+
-    |        brand|               model|cylinders|year|
-    +-------------+--------------------+---------+----+
-    |      Ferrari|360 Modena/Spider...|        8|2004|
-    |        Dodge|             Stratus|        4|2004|
-    |        Honda|             Insight|        3|2004|
-    |Mercedes-Benz|            SL55 AMG|        8|2004|
-    |       Nissan|       350z Roadster|        6|2004|
-    |          BMW|   330ci Convertible|        6|2004|
-    |          BMW|   330ci Convertible|        6|2004|
-    |        Acura|                 RSX|        4|2004|
-    |       Subaru|         Impreza AWD|        4|2004|
-    |       Toyota|              Celica|        4|2004|
-    +-------------+--------------------+---------+----+
-    only showing top 10 rows
+    +--------+--------------------+---------+----+
+    |   brand|               model|cylinders|year|
+    +--------+--------------------+---------+----+
+    |Chrysler|Town and Country/...|        6|2004|
+    +--------+--------------------+---------+----+
+    only showing top 1 row
     
 
 
@@ -439,56 +395,33 @@ news = spark.sql("""
 select * from news where int(year) > 2003
 order by int(year) asc
 """)
-news.show(10)
+news.show(1)
 ```
 
     +------------+--------------------+----+
     |publish_date|       headline_text|year|
     +------------+--------------------+----+
-    |    20040101|9 dead as bomb en...|2004|
-    |    20040101|brawls mar lake m...|2004|
-    |    20040101|abandoned pets cr...|2004|
-    |    20040101|act water charges...|2004|
-    |    20040101|aftershocks strik...|2004|
-    |    20040101|athens olympics c...|2004|
-    |    20040101|authorities conti...|2004|
-    |    20040101|ba flight detaine...|2004|
-    |    20040101|beagle remains si...|2004|
-    |    20040101|black caps hope t...|2004|
+    |    20040102|sheep exports thr...|2004|
     +------------+--------------------+----+
-    only showing top 10 rows
+    only showing top 1 row
     
 
 
+Create `vehicles_news` dataframe from `vehicles` and `news` with join on `year` and filter headlines with car manufacturers.
+
 
 ```python
-from pyspark.sql.functions import lower, col
-
 vehicle_news = vehicles.join(news, on="year", how='left').filter(news.headline_text.contains(lower(vehicles.brand))).distinct()
 ```
 
 
 ```python
-vehicle_news.count()
-```
-
-
-
-
-    412803
-
-
-
-
-```python
-from pyspark.sql.functions import asc
-
-ferrari_2006 = vehicle_news\
+ferrari_2012 = vehicle_news\
 .filter(col("year").like("%2012%"))\
 .filter(col("brand").like("%Ferrari%"))\
 .orderBy(asc("publish_date"))
 
-ferrari_2006.show(10)
+ferrari_2012.show(10)
 ```
 
     +----+-------+-----------------+---------+------------+--------------------+
@@ -511,7 +444,7 @@ ferrari_2006.show(10)
 
 
 ```python
-ferrari_2006.write.mode("overwrite").parquet(os.path.join("data", "ferrari"))
+vehicle_news.write.partitionBy("year").mode("overwrite").parquet(os.path.join("data", "vehicles_news"))
 ```
 
 #### 4.2 Data Quality Checks
@@ -524,46 +457,41 @@ Run Quality Checks
 
 
 ```python
-# Perform quality checks here
+if vehicle_news.count() > 0:
+    print("SUCCESS: check 0")
+else:
+    print("FAILED: check 0")
+
+if os.path.exists('./data/vehicles_news') > 0:
+    print("SUCCESS: check 1")
+else:
+    print("FAILED: check 1")
 ```
+
+    SUCCESS: check 0
+    SUCCESS: check 1
+
 
 #### 4.3 Data dictionary 
 Create a data dictionary for your data model. For each field, provide a brief description of what the data is and where it came from. You can include the data dictionary in the notebook or in a separate file.
 
+##### Data Model
+
+| column        | description                                |
+|---------------|--------------------------------------------|
+| year          | model year in yyyy                         |
+| brand         | manufacturer (division)                    |
+| model         | model name (carline)                       |
+| publish_date  | date of publishing in yyyyMMdd             |
+| headline_text | news headline text ascii english lowercase |
+
 #### Step 5: Complete Project Write Up
 * Clearly state the rationale for the choice of tools and technologies for the project.
+> By using Spark we can wrangle big data in memory which is efficient. We also store the data as parquet files. For latere analtics this open us the door to load the data to Amazon S3 and analyze data on AWS Redshift.
 * Propose how often the data should be updated and why.
+> If we want to get up-to-date data then we should load daily news
 * Write a description of how you would approach the problem differently under the following scenarios:
  * The data was increased by 100x.
  * The data populates a dashboard that must be updated on a daily basis by 7am every day.
  * The database needed to be accessed by 100+ people.
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
+> We can load data to the Cloud e.g. AWS. For storage we use S3, for analytics / access Redshift and for daily updates we can write a Apache Airflow pipeline by using the scheduler component.
