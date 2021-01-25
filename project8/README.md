@@ -1,6 +1,7 @@
 
 # Data Engineering Capstone Project
 * github repository: https://github.com/leventarican/data-engineer-nd/tree/main/project8
+* parquet files are compressed due to `too many files` error. location: `/home/workspace/data`
 
 #### Project Summary
 ~~--describe your project at a high level--~~
@@ -328,7 +329,8 @@ news_table.write.partitionBy("year").mode("overwrite").parquet(os.path.join("dat
 #### 3.1 Conceptual Data Model
 ~~Map out the conceptual data model and explain why you chose that model~~
 
-We create a fact table `vehicles_news` which contains the information for detailed car (model, cylinder, year, ...) with a relation to news in same year.
+We create a fact table `vehicles_news` which contains the information for detailed car (model, cylinder, year, ...) with a relation to news in same year. Our dim tables are: vehicles_table and news_tables.
+We are using here the star schema, because we have a simple db design and we want a fast query with less joins.
 
 #### 3.2 Mapping Out Data Pipelines
 ~~List the steps necessary to pipeline the data into the chosen data model~~
@@ -492,6 +494,16 @@ Create a data dictionary for your data model. For each field, provide a brief de
 > If we want to get up-to-date data then we should load daily news
 * Write a description of how you would approach the problem differently under the following scenarios:
  * The data was increased by 100x.
+ > If we have heavy reading we can use NoSQL which also scales vertically. We do denormalization and use optimizied queries.
+ > If we have heavy writing we can use relational DB
+ > Finally we can always use AWS Redshift with more cluster nodes for scaling.
  * The data populates a dashboard that must be updated on a daily basis by 7am every day.
+ > We can schedule our Airflow pipeline for daily 7am. For failure / backfill handling we can make usage of the following DAG parameters: `retries`, `catchup`, `on_failure_callback`.
  * The database needed to be accessed by 100+ people.
-> We can load data to the Cloud e.g. AWS. For storage we use S3, for analytics / access Redshift and for daily updates we can write a Apache Airflow pipeline by using the scheduler component.
+> We can load data to the Cloud e.g. AWS. By using Spark we can already handle fast data wrangling. For storage we use S3, for analytics / access Redshift and for daily updates we can write a Apache Airflow pipeline by using the scheduler component.
+> For a more cost-effective way we can use Apache Cassandra (distributed database) or even AWS Lambda (Serverles). If we use the serverless way we pay only for execution time. A kind of connection pooling.
+
+
+```python
+
+```
